@@ -69,6 +69,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--list", action="store_true", help="Show the mapping and write nothing")
     parser.add_argument("--approve", action="store_true", help="Mark imported cases approved")
     parser.add_argument(
+        "--allow-missing-personas",
+        action="store_true",
+        help="Import cases whose persona is not in the snapshot without a snapshot persona link",
+    )
+    parser.add_argument(
         "--map",
         action="append",
         default=[],
@@ -134,7 +139,7 @@ async def main() -> int:
         if unmapped:
             print(f"Refusing to import: unmapped requirements {', '.join(unmapped)}. Use --map.")
             return 1
-        if personas and missing_personas:
+        if personas and missing_personas and not args.allow_missing_personas:
             print("Refusing to import: add the missing personas to the snapshot or rename them.")
             return 1
         if test_case_set.status not in {TestCaseSetStatus.DRAFT, TestCaseSetStatus.REVIEW}:
