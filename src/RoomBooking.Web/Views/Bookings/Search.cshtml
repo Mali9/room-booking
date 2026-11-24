@@ -1,0 +1,83 @@
+@model SearchViewModel
+@{
+    ViewData["Title"] = "Find a room";
+}
+<h1>Find a room</h1>
+<form method="get" action="/Bookings/Search" class="form">
+    <input type="hidden" name="Submitted" value="true" />
+    <label for="Date">Date</label>
+    <input id="Date" name="Date" type="date" value="@Model.Date" required />
+    <label for="StartTime">Start time</label>
+    <select id="StartTime" name="StartTime">
+        @foreach (var time in SlotForm.StartTimes)
+        {
+            <option value="@time" selected="@(time == Model.StartTime)">@time</option>
+        }
+    </select>
+    <label for="Hours">Duration (hours)</label>
+    <select id="Hours" name="Hours">
+        @for (var hours = 1; hours <= 8; hours++)
+        {
+            <option value="@hours" selected="@(hours == Model.Hours)">@hours</option>
+        }
+    </select>
+    <label for="Attendees">Attendees</label>
+    <input id="Attendees" name="Attendees" type="number" min="1" max="50" value="@Model.Attendees" />
+    <button type="submit">Search</button>
+</form>
+
+@if (Model.Error is not null)
+{
+    <p class="alert error" role="alert">@Model.Error</p>
+}
+else if (Model.Submitted)
+{
+    <h2>Available rooms</h2>
+    @if (Model.Results.Count == 0)
+    {
+        <p id="no-results">No rooms are available for this slot.</p>
+    }
+    else
+    {
+        <table id="search-results">
+            <thead>
+            <tr>
+                <th>Room</th>
+                <th>Capacity</th>
+                <th>Hourly rate</th>
+                <th>Peak / off-peak hours</th>
+                <th>Price (excl. VAT)</th>
+                <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var result in Model.Results)
+            {
+                <tr>
+                    <td>@result.Room.Name</td>
+                    <td>@result.Room.Capacity</td>
+                    <td>@Text.Money(result.Room.HourlyRate)</td>
+                    <td>@result.Quote.PeakHours / @result.Quote.OffPeakHours</td>
+                    <td>
+                        @Text.Money(result.Quote.Total)
+                        @if (result.Quote.Discount > 0)
+                        {
+                            <span class="note">(includes 10% discount of @Text.Money(result.Quote.Discount))</span>
+                        }
+                    </td>
+                    <td>
+                        <form method="post" action="/Bookings/Create" asp-antiforgery="true" class="inline">
+                            <input type="hidden" name="RoomId" value="@result.Room.Id" />
+                            <input type="hidden" name="Date" value="@Model.Date" />
+                            <input type="hidden" name="StartTime" value="@Model.StartTime" />
+                            <input type="hidden" name="Hours" value="@Model.Hours" />
+                            <input type="hidden" name="Attendees" value="@Model.Attendees" />
+                            <button type="submit" aria-label="Book @result.Room.Name">Book</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}

@@ -1,0 +1,54 @@
+@model BookingDetailsViewModel
+@{
+    var booking = Model.Booking;
+    ViewData["Title"] = $"Booking {booking.Id}";
+}
+<h1>Booking @booking.Id</h1>
+<dl class="details">
+    <dt>Status</dt>
+    <dd id="booking-status">@booking.Status</dd>
+    <dt>Room</dt>
+    <dd>@Model.Room?.Name (@booking.RoomId)</dd>
+    <dt>Customer</dt>
+    <dd>@Model.Customer?.DisplayName</dd>
+    <dt>Date</dt>
+    <dd>@Text.Date(booking.Start)</dd>
+    <dt>Time</dt>
+    <dd>@Text.Time(booking.Start) - @Text.Time(booking.End) (@booking.Hours h)</dd>
+    <dt>Attendees</dt>
+    <dd>@booking.Attendees</dd>
+    <dt>Price (excl. VAT)</dt>
+    <dd id="booking-price">@Text.Money(booking.Price)</dd>
+    @if (booking.Status == BookingStatus.Cancelled)
+    {
+        <dt>Cancellation fee (excl. VAT)</dt>
+        <dd id="cancellation-fee">@Text.Money(booking.CancellationFee)</dd>
+    }
+</dl>
+
+@if (Model.CanChange)
+{
+    <p class="actions">
+        <a class="button" href="/Bookings/Reschedule/@booking.Id">Reschedule</a>
+        <a class="button danger" href="/Bookings/Cancel/@booking.Id">Cancel booking</a>
+    </p>
+}
+
+<h2>Invoices</h2>
+@if (Model.Invoices.Count == 0)
+{
+    <p>No invoices.</p>
+}
+else
+{
+    <ul>
+        @foreach (var invoice in Model.Invoices)
+        {
+            <li>
+                <a href="/Invoices/Details/@invoice.Id">@invoice.Id</a>
+                (@invoice.Kind, @invoice.Status, total @Text.Money(invoice.Total))
+            </li>
+        }
+    </ul>
+}
+<p><a href="/Bookings">Back to bookings</a></p>

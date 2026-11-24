@@ -1,0 +1,37 @@
+@model IReadOnlyList<Invoice>
+@{
+    ViewData["Title"] = "Invoices";
+}
+<h1>Invoices</h1>
+@if (Model.Count == 0)
+{
+    <p>No invoices yet.</p>
+}
+else
+{
+    <table id="invoices">
+        <thead>
+        <tr>
+            <th>Invoice</th>
+            <th>Booking</th>
+            <th>Type</th>
+            <th>Issued</th>
+            <th>Status</th>
+            <th>Total (incl. VAT)</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td><a href="/Invoices/Details/@invoice.Id">@invoice.Id</a></td>
+                <td>@invoice.BookingId</td>
+                <td>@(invoice.Kind == InvoiceKind.Booking ? "Booking" : "Cancellation fee")</td>
+                <td>@Text.DateTime(invoice.IssuedAt)</td>
+                <td>@invoice.Status</td>
+                <td>@Text.Money(invoice.Total)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

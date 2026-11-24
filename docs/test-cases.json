@@ -1,0 +1,560 @@
+{
+  "application": "RoomBooking",
+  "version": "1.0",
+  "base_url_note": "Paths are relative to the application base URL, for example http://localhost:5080.",
+  "common_preconditions": [
+    "System time is Monday 2027-01-04 08:00 (shown in the page footer).",
+    "Seed data is as described in docs/test-data.md."
+  ],
+  "reset_step": {
+    "action": "Open /Dev and select 'Reset test data'.",
+    "expected": "The message 'Test data has been reset.' is shown."
+  },
+  "test_cases": [
+    {
+      "id": "TC-001",
+      "title": "Customer signs in with valid credentials",
+      "description": "A customer signs in with a valid e-mail and password and is shown as signed in.",
+      "requirements": ["REQ-01"],
+      "persona": null,
+      "start_unauthenticated": true,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["The user is signed out."],
+      "steps": [
+        {"action": "Open /Account/Login.", "expected": "The Sign in page with Email and Password fields is shown."},
+        {"action": "Enter the e-mail and password and select 'Sign in'.", "expected": "The Home page opens and the header shows 'Signed in as Sara Al-Harbi'.", "data": "Email: sara@roombooking.test; Password: Sara#2027"}
+      ],
+      "code_touchpoints": ["AccountController.Login", "AuthService.ValidateCredentials", "PasswordHasher.Verify", "InMemoryUserRepository.GetByEmail"],
+      "automated_test": "AuthTests.Valid_customer_credentials_sign_in"
+    },
+    {
+      "id": "TC-002",
+      "title": "Sign-in with a wrong password is rejected",
+      "description": "Invalid credentials keep the user signed out and show an error.",
+      "requirements": ["REQ-01"],
+      "persona": null,
+      "start_unauthenticated": true,
+      "priority": "High",
+      "type": "Negative",
+      "preconditions": ["The user is signed out."],
+      "steps": [
+        {"action": "Open /Account/Login.", "expected": "The Sign in page is shown."},
+        {"action": "Enter the e-mail and a wrong password and select 'Sign in'.", "expected": "The message 'Invalid email or password.' is shown and the header still shows 'Sign in'.", "data": "Email: sara@roombooking.test; Password: wrong-password"}
+      ],
+      "code_touchpoints": ["AccountController.Login", "AuthService.ValidateCredentials", "PasswordHasher.Verify"],
+      "automated_test": "AuthTests.Wrong_password_is_rejected"
+    },
+    {
+      "id": "TC-003",
+      "title": "Customer cannot open the Add room page",
+      "description": "Admin-only pages are denied to customers.",
+      "requirements": ["REQ-01", "REQ-03"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Security",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Rooms/Create.", "expected": "The 'Access denied' page is shown with 'You do not have permission to open this page.'"}
+      ],
+      "code_touchpoints": ["RoomsController.Create", "Program (cookie authentication, AccessDeniedPath)"],
+      "automated_test": null
+    },
+    {
+      "id": "TC-004",
+      "title": "Customer room list shows active rooms only",
+      "description": "Customers see the active rooms and no admin controls.",
+      "requirements": ["REQ-02"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Rooms.", "expected": "The table lists exactly Al Nakheel (R-101), Al Waha (R-102) and Board Room (R-201) with their capacity and hourly rate."},
+        {"action": "Check the page for Focus Pod and for an 'Add room' button.", "expected": "Focus Pod is not listed, there is no 'Add room' button and no Status column."}
+      ],
+      "code_touchpoints": ["RoomsController.Index", "RoomService.GetCatalogue"],
+      "automated_test": "RoomTests.Customer_catalogue_hides_inactive_rooms"
+    },
+    {
+      "id": "TC-005",
+      "title": "Admin room list shows all rooms with status",
+      "description": "Admins see active and inactive rooms.",
+      "requirements": ["REQ-02"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms.", "expected": "Four rooms are listed. Al Nakheel, Al Waha and Board Room show status Active; Focus Pod (R-301) shows status Inactive. An 'Add room' button is shown."}
+      ],
+      "code_touchpoints": ["RoomsController.Index", "RoomService.GetCatalogue"],
+      "automated_test": "RoomTests.Admin_catalogue_includes_inactive_rooms"
+    },
+    {
+      "id": "TC-006",
+      "title": "Admin adds a new room",
+      "description": "A valid room is created as Active with the next room ID.",
+      "requirements": ["REQ-03"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms and select 'Add room'.", "expected": "The 'Add room' form is shown."},
+        {"action": "Enter the room details and select 'Create room'.", "expected": "The Rooms page shows 'Room Al Rawdah created with ID R-401.'", "data": "Name: Al Rawdah; Capacity: 8; Hourly rate: 150"},
+        {"action": "Find Al Rawdah in the room list.", "expected": "R-401 Al Rawdah is listed with capacity 8, hourly rate 150.00 SAR and status Active."}
+      ],
+      "code_touchpoints": ["RoomsController.Create", "RoomService.Create", "RoomService.Validate", "InMemoryRoomRepository.NextId"],
+      "automated_test": "RoomTests.Admin_creates_room_with_next_id"
+    },
+    {
+      "id": "TC-007",
+      "title": "Room with capacity 0 is rejected",
+      "description": "Capacity must be between 1 and 50.",
+      "requirements": ["REQ-03"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Negative",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms/Create.", "expected": "The 'Add room' form is shown."},
+        {"action": "Enter the room details and select 'Create room'.", "expected": "The form stays open and shows 'Capacity must be between 1 and 50.'", "data": "Name: Al Rawdah; Capacity: 0; Hourly rate: 150"}
+      ],
+      "code_touchpoints": ["RoomsController.Create", "RoomService.Create", "RoomService.Validate"],
+      "automated_test": "RoomTests.Capacity_zero_is_rejected"
+    },
+    {
+      "id": "TC-008",
+      "title": "Duplicate room name is rejected",
+      "description": "Room names are unique.",
+      "requirements": ["REQ-03"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Negative",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms/Create.", "expected": "The 'Add room' form is shown."},
+        {"action": "Enter the room details and select 'Create room'.", "expected": "The form stays open and shows \"A room named 'Al Waha' already exists.\"", "data": "Name: Al Waha; Capacity: 5; Hourly rate: 150"}
+      ],
+      "code_touchpoints": ["RoomsController.Create", "RoomService.Create", "RoomService.Validate"],
+      "automated_test": "RoomTests.Duplicate_room_name_is_rejected"
+    },
+    {
+      "id": "TC-009",
+      "title": "Admin changes a room's hourly rate",
+      "description": "Edits are saved and shown in the room list.",
+      "requirements": ["REQ-03"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms and select 'Edit' for Al Nakheel.", "expected": "The 'Edit room' form shows Room ID R-101, name Al Nakheel, capacity 6 and hourly rate 100."},
+        {"action": "Change the hourly rate and select 'Save changes'.", "expected": "The Rooms page shows 'Room Al Nakheel updated.' and Al Nakheel has hourly rate 120.00 SAR.", "data": "Hourly rate: 120"}
+      ],
+      "code_touchpoints": ["RoomsController.Edit", "RoomService.Update", "RoomService.Validate"],
+      "automated_test": "RoomTests.Admin_updates_hourly_rate"
+    },
+    {
+      "id": "TC-010",
+      "title": "Room with upcoming bookings cannot be deactivated",
+      "description": "Deactivation is blocked while confirmed future bookings exist.",
+      "requirements": ["REQ-04"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Negative",
+      "preconditions": ["Signed in as Admin.", "Board Room has upcoming booking BK-1003."],
+      "steps": [
+        {"action": "Open /Rooms and select 'Deactivate' for Board Room.", "expected": "The message 'Room Board Room has upcoming bookings and cannot be deactivated.' is shown and Board Room is still Active."}
+      ],
+      "code_touchpoints": ["RoomsController.SetActive", "RoomService.SetActive", "RoomService.HasUpcomingBookings", "InMemoryBookingRepository.GetConfirmedForRoom"],
+      "automated_test": "RoomTests.Room_with_upcoming_bookings_cannot_be_deactivated"
+    },
+    {
+      "id": "TC-011",
+      "title": "Admin activates an inactive room",
+      "description": "An inactive room can be activated.",
+      "requirements": ["REQ-04"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Rooms and select 'Activate' for Focus Pod.", "expected": "The message 'Room Focus Pod activated.' is shown and Focus Pod has status Active."}
+      ],
+      "code_touchpoints": ["RoomsController.SetActive", "RoomService.SetActive"],
+      "automated_test": "RoomTests.Inactive_room_can_be_activated"
+    },
+    {
+      "id": "TC-012",
+      "title": "Search excludes booked and inactive rooms",
+      "description": "Al Nakheel is booked at the requested time and Focus Pod is inactive, so neither is offered.",
+      "requirements": ["REQ-05", "REQ-08"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara.", "BK-1001 holds Al Nakheel on 2027-01-04 10:00 - 12:00."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Available rooms are, in order: Al Waha at 300.00 SAR and Board Room at 600.00 SAR, each with 1 / 0 peak / off-peak hours. Al Nakheel and Focus Pod are not listed.", "data": "Date: 2027-01-04; Start time: 10:00; Duration: 1; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "AvailabilityService.FindAvailableRooms", "AvailabilityService.IsRoomFree", "AvailabilityService.ValidateSlot", "PricingService.Quote", "PricingService.IsPeak"],
+      "automated_test": "SearchAndPricingTests.Search_excludes_booked_and_inactive_rooms"
+    },
+    {
+      "id": "TC-013",
+      "title": "Search filters rooms by capacity",
+      "description": "Only rooms that fit the attendees are offered.",
+      "requirements": ["REQ-05"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Only Board Room is listed, at 1,200.00 SAR.", "data": "Date: 2027-01-06; Start time: 10:00; Duration: 2; Attendees: 15"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "AvailabilityService.FindAvailableRooms", "PricingService.Quote"],
+      "automated_test": "SearchAndPricingTests.Search_filters_by_capacity"
+    },
+    {
+      "id": "TC-014",
+      "title": "Slot ending after 22:00 is rejected",
+      "description": "Bookings must end by closing time.",
+      "requirements": ["REQ-06"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Negative",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "The message 'Bookings must start at 08:00 or later and end by 22:00.' is shown and no rooms are listed.", "data": "Date: 2027-01-06; Start time: 21:00; Duration: 2; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "AvailabilityService.ValidateSlot"],
+      "automated_test": "SearchAndPricingTests.Booking_must_end_by_closing_time"
+    },
+    {
+      "id": "TC-015",
+      "title": "Slot in the past is rejected",
+      "description": "Bookings must start after the current system time.",
+      "requirements": ["REQ-06"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Negative",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "The message 'The start time must be in the future.' is shown and no rooms are listed.", "data": "Date: 2027-01-03; Start time: 10:00; Duration: 1; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "AvailabilityService.ValidateSlot"],
+      "automated_test": "SearchAndPricingTests.Start_in_the_past_is_rejected"
+    },
+    {
+      "id": "TC-016",
+      "title": "Customer books a room at peak price",
+      "description": "A 2-hour weekday booking inside peak hours costs 1.5 times the rate.",
+      "requirements": ["REQ-07", "REQ-08"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search, enter the search criteria and select 'Search'.", "expected": "Al Waha is listed at 600.00 SAR with 2 / 0 peak / off-peak hours.", "data": "Date: 2027-01-07; Start time: 10:00; Duration: 2; Attendees: 6"},
+        {"action": "Select 'Book' for Al Waha.", "expected": "The booking page shows 'Booking BK-1005 confirmed.'"},
+        {"action": "Review the booking details.", "expected": "Status Confirmed, room Al Waha (R-102), date 2027-01-07, time 10:00 - 12:00 (2 h), attendees 6, price 600.00 SAR."}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "BookingsController.Create", "BookingsController.Details", "BookingService.Create", "AvailabilityService.EnsureBookable", "PricingService.Quote", "InvoiceService.IssueForBooking", "NotificationService.BookingConfirmed"],
+      "automated_test": "BookingLifecycleTests.Customer_books_room_at_peak_price"
+    },
+    {
+      "id": "TC-017",
+      "title": "Weekend hours are off-peak",
+      "description": "Friday has no peak hours.",
+      "requirements": ["REQ-08"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Al Nakheel is listed at 200.00 SAR with 0 / 2 peak / off-peak hours.", "data": "Date: 2027-01-08; Start time: 10:00; Duration: 2; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "PricingService.Quote", "PricingService.IsPeak", "PricingPolicy.PeakDays"],
+      "automated_test": "SearchAndPricingTests.Weekend_is_off_peak"
+    },
+    {
+      "id": "TC-018",
+      "title": "Slot crossing the end of peak hours is priced per hour",
+      "description": "16:00 to 18:00 on a weekday has one peak and one off-peak hour.",
+      "requirements": ["REQ-08"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Al Nakheel is listed at 250.00 SAR with 1 / 1 peak / off-peak hours.", "data": "Date: 2027-01-06; Start time: 16:00; Duration: 2; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "PricingService.Quote", "PricingService.IsPeak", "PricingPolicy.PeakMultiplier", "PricingPolicy.PeakEnd"],
+      "automated_test": "SearchAndPricingTests.Slot_crossing_peak_end_is_priced_per_hour"
+    },
+    {
+      "id": "TC-019",
+      "title": "Four-hour booking gets a 10% discount",
+      "description": "The long-booking discount is shown in the search results.",
+      "requirements": ["REQ-09"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Al Nakheel is listed at 540.00 SAR with the note '(includes 10% discount of 60.00 SAR)' and 4 / 0 peak / off-peak hours.", "data": "Date: 2027-01-07; Start time: 09:00; Duration: 4; Attendees: 4"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "PricingService.Quote", "PricingPolicy.LongBookingHours", "PricingPolicy.LongBookingDiscountRate"],
+      "automated_test": "SearchAndPricingTests.Four_hours_or_more_get_ten_percent_discount"
+    },
+    {
+      "id": "TC-020",
+      "title": "Evening long booking is off-peak and discounted",
+      "description": "17:00 to 21:00 on Sunday has no peak hours and gets the long-booking discount.",
+      "requirements": ["REQ-08", "REQ-09"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search.", "expected": "The 'Find a room' form is shown."},
+        {"action": "Enter the search criteria and select 'Search'.", "expected": "Al Waha is listed at 720.00 SAR with the note '(includes 10% discount of 80.00 SAR)' and 0 / 4 peak / off-peak hours.", "data": "Date: 2027-01-10; Start time: 17:00; Duration: 4; Attendees: 6"}
+      ],
+      "code_touchpoints": ["BookingsController.Search", "PricingService.Quote", "PricingService.IsPeak"],
+      "automated_test": "SearchAndPricingTests.Evening_long_booking_is_off_peak_with_discount"
+    },
+    {
+      "id": "TC-021",
+      "title": "Booking issues an invoice with discount and VAT",
+      "description": "The booking invoice shows the room line, the discount line, subtotal, 15% VAT and total.",
+      "requirements": ["REQ-10", "REQ-09"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Search, enter the search criteria, select 'Search', then select 'Book' for Al Nakheel.", "expected": "The booking page shows 'Booking BK-1005 confirmed.' and price 540.00 SAR.", "data": "Date: 2027-01-07; Start time: 09:00; Duration: 4; Attendees: 4"},
+        {"action": "Under Invoices on the booking page, open INV-5005.", "expected": "Invoice INV-5005 has type Booking and status Issued."},
+        {"action": "Review the invoice lines and totals.", "expected": "Lines: 'Al Nakheel, 4 h (4 peak, 0 off-peak)' 600.00 SAR and 'Long booking discount (10%)' -60.00 SAR. Subtotal 540.00 SAR, VAT (15%) 81.00 SAR, Total 621.00 SAR."}
+      ],
+      "code_touchpoints": ["BookingsController.Create", "BookingService.Create", "PricingService.Quote", "PricingService.CalculateVat", "InvoiceService.IssueForBooking", "InvoicesController.Details"],
+      "automated_test": "BookingLifecycleTests.Booking_issues_invoice_with_discount_and_vat"
+    },
+    {
+      "id": "TC-022",
+      "title": "Existing invoice shows discount and VAT",
+      "description": "A customer views a seeded invoice with a discount.",
+      "requirements": ["REQ-10"],
+      "persona": "Customer Omar",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Omar."],
+      "steps": [
+        {"action": "Open /Invoices.", "expected": "INV-5003 (BK-1003) and INV-5004 (BK-1004) are listed, both Booking and Issued."},
+        {"action": "Open INV-5003.", "expected": "Lines: 'Board Room, 4 h (4 peak, 0 off-peak)' 2,400.00 SAR and 'Long booking discount (10%)' -240.00 SAR. Subtotal 2,160.00 SAR, VAT (15%) 324.00 SAR, Total 2,484.00 SAR."}
+      ],
+      "code_touchpoints": ["InvoicesController.Index", "InvoicesController.Details", "InvoiceService.GetVisibleTo", "InvoiceService.Get"],
+      "automated_test": "BookingLifecycleTests.Seeded_invoice_shows_discount_and_vat"
+    },
+    {
+      "id": "TC-023",
+      "title": "Cancelling more than 24 hours ahead is free",
+      "description": "BK-1002 starts on 2027-01-06 13:00, more than 24 hours after the system time.",
+      "requirements": ["REQ-11"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Details/BK-1002 and select 'Cancel booking'.", "expected": "The cancellation page shows 'Cancellation fee: 0.00 SAR'."},
+        {"action": "Select 'Confirm cancellation'.", "expected": "The message 'Booking BK-1002 cancelled. Cancellation fee: 0.00 SAR.' is shown, status is Cancelled and the cancellation fee is 0.00 SAR."},
+        {"action": "Open /Invoices.", "expected": "INV-5002 has status Void. No cancellation fee invoice exists for BK-1002."}
+      ],
+      "code_touchpoints": ["BookingsController.Cancel", "BookingsController.CancelConfirmed", "BookingService.PreviewCancellationFee", "BookingService.Cancel", "CancellationPolicy.CalculateFee", "InvoiceService.VoidBookingInvoices", "NotificationService.BookingCancelled"],
+      "automated_test": "BookingLifecycleTests.Cancelling_more_than_24_hours_ahead_is_free"
+    },
+    {
+      "id": "TC-024",
+      "title": "Late cancellation charges 50% plus VAT",
+      "description": "BK-1001 starts on 2027-01-04 10:00, two hours after the system time.",
+      "requirements": ["REQ-11", "REQ-10"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Details/BK-1001 and select 'Cancel booking'.", "expected": "The cancellation page shows 'Cancellation fee: 150.00 SAR (plus VAT 22.50 SAR)'."},
+        {"action": "Select 'Confirm cancellation'.", "expected": "The message 'Booking BK-1001 cancelled. Cancellation fee: 150.00 SAR.' is shown and status is Cancelled."},
+        {"action": "Open /Invoices.", "expected": "INV-5001 has status Void. INV-5005 for BK-1001 has type Cancellation fee, status Issued and total 172.50 SAR."}
+      ],
+      "code_touchpoints": ["BookingsController.Cancel", "BookingsController.CancelConfirmed", "BookingService.Cancel", "CancellationPolicy.CalculateFee", "InvoiceService.VoidBookingInvoices", "InvoiceService.IssueCancellationFee", "PricingService.CalculateVat", "NotificationService.BookingCancelled"],
+      "automated_test": "BookingLifecycleTests.Late_cancellation_charges_half_the_price"
+    },
+    {
+      "id": "TC-025",
+      "title": "Admin cancellation waives the fee",
+      "description": "An admin cancels a booking that would otherwise incur a late fee.",
+      "requirements": ["REQ-15"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Bookings/Details/BK-1001 and select 'Cancel booking'.", "expected": "The cancellation page shows 'Cancellation fee: 0.00 SAR'."},
+        {"action": "Select 'Confirm cancellation'.", "expected": "The message 'Booking BK-1001 cancelled. Cancellation fee: 0.00 SAR.' is shown and status is Cancelled."}
+      ],
+      "code_touchpoints": ["BookingsController.Cancel", "BookingsController.CancelConfirmed", "BookingService.Cancel", "CancellationPolicy.CalculateFee"],
+      "automated_test": "BookingLifecycleTests.Admin_cancellation_waives_the_fee"
+    },
+    {
+      "id": "TC-026",
+      "title": "Reschedule re-prices the booking and re-issues the invoice",
+      "description": "Moving BK-1002 from a weekday peak slot to Friday makes it off-peak.",
+      "requirements": ["REQ-12", "REQ-08", "REQ-10"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Details/BK-1002 and select 'Reschedule'.", "expected": "The reschedule form shows date 2027-01-06, start 13:00, duration 2."},
+        {"action": "Enter the new slot and select 'Save new time'.", "expected": "The message 'Booking BK-1002 rescheduled. New price: 400.00 SAR.' is shown. Status Confirmed, date 2027-01-08, time 10:00 - 12:00.", "data": "New date: 2027-01-08; New start time: 10:00; Duration: 2"},
+        {"action": "Open /Invoices.", "expected": "INV-5002 has status Void. INV-5005 for BK-1002 has type Booking, status Issued and total 460.00 SAR."}
+      ],
+      "code_touchpoints": ["BookingsController.Reschedule", "BookingService.Reschedule", "AvailabilityService.EnsureBookable", "PricingService.Quote", "InvoiceService.VoidBookingInvoices", "InvoiceService.IssueForBooking", "NotificationService.BookingRescheduled"],
+      "automated_test": "BookingLifecycleTests.Reschedule_reprices_and_reissues_invoice"
+    },
+    {
+      "id": "TC-027",
+      "title": "Reschedule into a booked slot is rejected",
+      "description": "Al Waha is booked by BK-1004 on 2027-01-07 14:00 - 16:00.",
+      "requirements": ["REQ-12", "REQ-05"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Negative",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Reschedule/BK-1002.", "expected": "The reschedule form is shown."},
+        {"action": "Enter the new slot and select 'Save new time'.", "expected": "The form stays open and shows 'Room Al Waha is already booked at that time.'", "data": "New date: 2027-01-07; New start time: 15:00; Duration: 1"},
+        {"action": "Open /Bookings/Details/BK-1002.", "expected": "The booking is unchanged: date 2027-01-06, time 13:00 - 15:00, price 600.00 SAR."}
+      ],
+      "code_touchpoints": ["BookingsController.Reschedule", "BookingService.Reschedule", "AvailabilityService.EnsureBookable", "AvailabilityService.IsRoomFree"],
+      "automated_test": "BookingLifecycleTests.Reschedule_into_a_booked_slot_is_rejected"
+    },
+    {
+      "id": "TC-028",
+      "title": "Booking sends a confirmation notification",
+      "description": "The unread count increases and the message is listed.",
+      "requirements": ["REQ-13"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara.", "The header shows 'Notifications (0)'."],
+      "steps": [
+        {"action": "Open /Bookings/Search, enter the search criteria, select 'Search', then select 'Book' for Al Waha.", "expected": "'Booking BK-1005 confirmed.' is shown and the header shows 'Notifications (1)'.", "data": "Date: 2027-01-07; Start time: 10:00; Duration: 2; Attendees: 6"},
+        {"action": "Select 'Notifications (1)' in the header.", "expected": "The newest notification reads 'New: Booking BK-1005 confirmed: Al Waha on 2027-01-07 from 10:00 to 12:00.'"},
+        {"action": "Open /Bookings.", "expected": "The header shows 'Notifications (0)'."}
+      ],
+      "code_touchpoints": ["BookingService.Create", "NotificationService.BookingConfirmed", "NotificationService.UnreadCount", "NotificationService.MarkAllRead", "NotificationsController.Index", "_Layout"],
+      "automated_test": "BookingLifecycleTests.Booking_sends_confirmation_notification"
+    },
+    {
+      "id": "TC-029",
+      "title": "Cancellation sends a notification with the fee",
+      "description": "The cancellation message states the fee.",
+      "requirements": ["REQ-13"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings/Cancel/BK-1002 and select 'Confirm cancellation'.", "expected": "The message 'Booking BK-1002 cancelled. Cancellation fee: 0.00 SAR.' is shown."},
+        {"action": "Open /Notifications.", "expected": "The newest notification reads 'New: Booking BK-1002 cancelled. Cancellation fee: 0.00 SAR.'"}
+      ],
+      "code_touchpoints": ["BookingService.Cancel", "CancellationPolicy.CalculateFee", "NotificationService.BookingCancelled", "NotificationsController.Index"],
+      "automated_test": "BookingLifecycleTests.Cancellation_sends_notification_with_fee"
+    },
+    {
+      "id": "TC-030",
+      "title": "Customer sees only their own bookings",
+      "description": "My bookings lists the signed-in customer's bookings only.",
+      "requirements": ["REQ-14"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Security",
+      "preconditions": ["Signed in as Customer Sara."],
+      "steps": [
+        {"action": "Open /Bookings.", "expected": "The 'My bookings' table lists exactly BK-1001 (Al Nakheel, 2027-01-04) and BK-1002 (Al Waha, 2027-01-06). BK-1003 and BK-1004 are not listed."}
+      ],
+      "code_touchpoints": ["BookingsController.Index", "BookingService.GetVisibleTo", "InMemoryBookingRepository.GetByCustomer"],
+      "automated_test": "BookingLifecycleTests.Customer_sees_only_own_bookings"
+    },
+    {
+      "id": "TC-031",
+      "title": "Admin sees all bookings with customer names",
+      "description": "All bookings lists every booking.",
+      "requirements": ["REQ-14"],
+      "persona": "Admin",
+      "start_unauthenticated": false,
+      "priority": "Medium",
+      "type": "Functional",
+      "preconditions": ["Signed in as Admin."],
+      "steps": [
+        {"action": "Open /Bookings.", "expected": "The 'All bookings' table lists BK-1001 and BK-1002 for Sara Al-Harbi, and BK-1003 and BK-1004 for Omar Haddad."}
+      ],
+      "code_touchpoints": ["BookingsController.Index", "BookingService.GetVisibleTo", "InMemoryBookingRepository.GetAll"],
+      "automated_test": "BookingLifecycleTests.Admin_sees_all_bookings"
+    },
+    {
+      "id": "TC-032",
+      "title": "Customer cannot open another customer's booking",
+      "description": "Direct links to other customers' bookings are not found.",
+      "requirements": ["REQ-14"],
+      "persona": "Customer Sara",
+      "start_unauthenticated": false,
+      "priority": "High",
+      "type": "Security",
+      "preconditions": ["Signed in as Customer Sara.", "BK-1003 belongs to Omar."],
+      "steps": [
+        {"action": "Open /Bookings/Details/BK-1003.", "expected": "The 'Not found' page shows 'Booking not found.' and no booking details are shown."}
+      ],
+      "code_touchpoints": ["BookingsController.Details", "BookingService.Get"],
+      "automated_test": "BookingLifecycleTests.Customer_cannot_open_another_customers_booking"
+    }
+  ]
+}

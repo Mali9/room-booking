@@ -1,0 +1,65 @@
+@inject NotificationService Notifications
+@inject RoomBooking.Core.Abstractions.IClock Clock
+@{
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var isAdmin = User.IsInRole("Admin");
+    var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    var unread = signedIn && userId is not null ? Notifications.UnreadCount(userId) : 0;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - RoomBooking</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+<header>
+    <nav aria-label="Main">
+        <a class="brand" href="/">RoomBooking</a>
+        @if (signedIn)
+        {
+            <a href="/Rooms">Rooms</a>
+            @if (!isAdmin)
+            {
+                <a href="/Bookings/Search">Find a room</a>
+                <a href="/Bookings">My bookings</a>
+            }
+            else
+            {
+                <a href="/Bookings">All bookings</a>
+            }
+            <a href="/Invoices">Invoices</a>
+            <a href="/Notifications">Notifications (@unread)</a>
+        }
+        <span class="spacer"></span>
+        @if (signedIn)
+        {
+            <span id="signed-in-user">Signed in as @User.Identity!.Name</span>
+            <form method="post" action="/Account/Logout" asp-antiforgery="true" class="inline">
+                <button type="submit">Sign out</button>
+            </form>
+        }
+        else
+        {
+            <a href="/Account/Login">Sign in</a>
+        }
+    </nav>
+</header>
+<main>
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert success" role="status">@success</div>
+    }
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert error" role="alert">@error</div>
+    }
+    @RenderBody()
+</main>
+<footer>
+    System time: <span id="system-time">@Text.DateTime(Clock.Now) (@Clock.Now.DayOfWeek)</span>
+</footer>
+</body>
+</html>

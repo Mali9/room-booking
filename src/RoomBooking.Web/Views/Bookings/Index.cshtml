@@ -1,0 +1,48 @@
+@model IReadOnlyList<BookingRow>
+@{
+    var isAdmin = User.IsInRole("Admin");
+    ViewData["Title"] = isAdmin ? "All bookings" : "My bookings";
+}
+<h1>@ViewData["Title"]</h1>
+@if (Model.Count == 0)
+{
+    <p>No bookings yet.</p>
+}
+else
+{
+    <table id="bookings">
+        <thead>
+        <tr>
+            <th>Booking</th>
+            @if (isAdmin)
+            {
+                <th>Customer</th>
+            }
+            <th>Room</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Attendees</th>
+            <th>Status</th>
+            <th>Price (excl. VAT)</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td><a href="/Bookings/Details/@row.Booking.Id">@row.Booking.Id</a></td>
+                @if (isAdmin)
+                {
+                    <td>@row.Customer?.DisplayName</td>
+                }
+                <td>@row.Room?.Name</td>
+                <td>@Text.Date(row.Booking.Start)</td>
+                <td>@Text.Time(row.Booking.Start) - @Text.Time(row.Booking.End)</td>
+                <td>@row.Booking.Attendees</td>
+                <td>@row.Booking.Status</td>
+                <td>@Text.Money(row.Booking.Price)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

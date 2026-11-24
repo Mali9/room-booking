@@ -1,0 +1,20 @@
+@model CancelViewModel
+@{
+    ViewData["Title"] = $"Cancel booking {Model.Booking.Id}";
+}
+<h1>Cancel booking @Model.Booking.Id</h1>
+<p>
+    @Model.Room?.Name on @Text.Date(Model.Booking.Start),
+    @Text.Time(Model.Booking.Start) - @Text.Time(Model.Booking.End).
+</p>
+<p id="cancellation-fee-preview">
+    Cancellation fee: <strong>@Text.Money(Model.Fee)</strong>
+    @if (Model.Fee > 0)
+    {
+        <span>(plus VAT @Text.Money(Model.FeeVat))</span>
+    }
+</p>
+<form method="post" action="/Bookings/Cancel/@Model.Booking.Id" asp-antiforgery="true" class="inline">
+    <button type="submit" class="danger">Confirm cancellation</button>
+</form>
+<a href="/Bookings/Details/@Model.Booking.Id">Keep booking</a>

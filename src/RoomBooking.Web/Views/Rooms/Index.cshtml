@@ -1,0 +1,49 @@
+@model IReadOnlyList<Room>
+@{
+    ViewData["Title"] = "Rooms";
+    var isAdmin = User.IsInRole("Admin");
+}
+<h1>Rooms</h1>
+@if (isAdmin)
+{
+    <p><a class="button" href="/Rooms/Create">Add room</a></p>
+}
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Capacity</th>
+        <th>Hourly rate</th>
+        @if (isAdmin)
+        {
+            <th>Status</th>
+            <th>Actions</th>
+        }
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var room in Model)
+    {
+        <tr>
+            <td>@room.Id</td>
+            <td>@room.Name</td>
+            <td>@room.Capacity</td>
+            <td>@Text.Money(room.HourlyRate)</td>
+            @if (isAdmin)
+            {
+                <td>@(room.IsActive ? "Active" : "Inactive")</td>
+                <td class="actions">
+                    <a href="/Rooms/Edit/@room.Id" aria-label="Edit @room.Name">Edit</a>
+                    <form method="post" action="/Rooms/SetActive/@room.Id" asp-antiforgery="true" class="inline">
+                        <input type="hidden" name="active" value="@(room.IsActive ? "false" : "true")" />
+                        <button type="submit" aria-label="@(room.IsActive ? "Deactivate" : "Activate") @room.Name">
+                            @(room.IsActive ? "Deactivate" : "Activate")
+                        </button>
+                    </form>
+                </td>
+            }
+        </tr>
+    }
+    </tbody>
+</table>

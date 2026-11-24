@@ -1,0 +1,28 @@
+@model RescheduleViewModel
+@{
+    var booking = Model.Booking!;
+    ViewData["Title"] = $"Reschedule booking {booking.Id}";
+}
+<h1>Reschedule booking @booking.Id</h1>
+<p>Room: @Model.Room?.Name. Currently @Text.DateTime(booking.Start) for @booking.Hours h.</p>
+<form method="post" action="/Bookings/Reschedule/@booking.Id" asp-antiforgery="true" class="form">
+    <div asp-validation-summary="All" class="alert error" role="alert"></div>
+    <label for="Date">New date</label>
+    <input id="Date" name="Date" type="date" value="@Model.Date" required />
+    <label for="StartTime">New start time</label>
+    <select id="StartTime" name="StartTime">
+        @foreach (var time in SlotForm.StartTimes)
+        {
+            <option value="@time" selected="@(time == Model.StartTime)">@time</option>
+        }
+    </select>
+    <label for="Hours">Duration (hours)</label>
+    <select id="Hours" name="Hours">
+        @for (var hours = 1; hours <= 8; hours++)
+        {
+            <option value="@hours" selected="@(hours == Model.Hours)">@hours</option>
+        }
+    </select>
+    <button type="submit">Save new time</button>
+    <a href="/Bookings/Details/@booking.Id">Cancel</a>
+</form>
