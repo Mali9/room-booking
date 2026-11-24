@@ -11,11 +11,12 @@ Two sets are given for each scenario:
   else in "Must rerun" should still pass.
 
 The sets were derived from the call paths in the code and checked with the xUnit reference tests
-(`dotnet test --filter "TestCase=TC-0xx"`).
+(`dotnet test --filter "TestCase=TC-0xx"`): on each branch, exactly the "Expected to fail" reference tests fail
+(S1: 6, S2: 2, S3: 1, S4: 0 of 31).
 
 ## S1 Peak multiplier from 1.5 to 1.75
 
-Branch: `change/pricing-peak`. File: `src/RoomBooking.Core/Services/PricingPolicy.cs`.
+Branch: `change/pricing-peak`. Files: `src/RoomBooking.Core/Services/PricingPolicy.cs` and the rules text in `Views/Home/Index.cshtml` (no test case covers the Home page).
 Changed symbol: `PricingPolicy.PeakMultiplier`, read by `PricingService.Quote`.
 
 | Set | Test cases |
@@ -30,7 +31,7 @@ TC-018 275.00; TC-019 630.00 with a 70.00 discount; TC-021 total 724.50.
 
 ## S2 Free-cancellation window from 24 to 72 hours
 
-Branch: `change/cancellation-window`. File: `src/RoomBooking.Core/Services/CancellationPolicy.cs`.
+Branch: `change/cancellation-window`. Files: `src/RoomBooking.Core/Services/CancellationPolicy.cs` and the rules text in `Views/Home/Index.cshtml`.
 Changed symbol: `CancellationPolicy.FreeCancellationHours`, read by `CancellationPolicy.CalculateFee`.
 
 | Set | Test cases |
