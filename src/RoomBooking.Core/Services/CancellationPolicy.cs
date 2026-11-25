@@ -9,7 +9,7 @@ public sealed class CancellationPolicy
     public int FreeCancellationHours { get; init; } = 24;
 
     /// <summary>Share of the booking price charged for a late cancellation.</summary>
-    public decimal LateFeeRate { get; init; } = 0.5m;
+    public decimal LateFeeRate { get; init; } = 0.4m;
 
     public decimal CalculateFee(Booking booking, DateTime now, bool waived)
     {

@@ -80,12 +80,12 @@ public sealed class BookingLifecycleTests
     {
         var booking = _app.BookingService.Cancel("BK-1001", SeedData.SaraId, actorIsAdmin: false);
 
-        Assert.Equal(150m, booking.CancellationFee);
+        Assert.Equal(120m, booking.CancellationFee);
         var invoices = _app.Invoices.GetByBooking("BK-1001");
         Assert.Equal(InvoiceStatus.Void, invoices.Single(invoice => invoice.Id == "INV-5001").Status);
         var fee = invoices.Single(invoice => invoice.Kind == InvoiceKind.CancellationFee);
         Assert.Equal("INV-5005", fee.Id);
-        Assert.Equal(172.5m, fee.Total);
+        Assert.Equal(138m, fee.Total);
     }
 
     [Fact]
