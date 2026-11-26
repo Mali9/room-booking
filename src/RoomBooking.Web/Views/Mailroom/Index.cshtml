@@ -1,0 +1,23 @@
+@using RoomBooking.Core.Facilities.Mailroom
+@model IReadOnlyList<MailroomItem>
+@{
+    ViewData["Title"] = "Mailroom";
+}
+<h1>Mailroom</h1>
+<p><a href="/Mailroom/Orders">My Mailroom orders</a> · <a href="/Mailroom/Report">Mailroom report</a></p>
+<table id="items">
+    <thead>
+    <tr><th>Item</th><th>Unit price</th><th>Available</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@Text.Money(item.UnitPrice)</td>
+            <td>@item.Capacity</td>
+            <td><a href="/Mailroom/Quote?itemId=@item.Id&quantity=1">Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

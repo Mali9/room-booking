@@ -1,0 +1,23 @@
+@using RoomBooking.Core.Facilities.Printing
+@model IReadOnlyList<PrintingItem>
+@{
+    ViewData["Title"] = "Printing";
+}
+<h1>Printing</h1>
+<p><a href="/Printing/Orders">My Printing orders</a> · <a href="/Printing/Report">Printing report</a></p>
+<table id="items">
+    <thead>
+    <tr><th>Item</th><th>Unit price</th><th>Available</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@Text.Money(item.UnitPrice)</td>
+            <td>@item.Capacity</td>
+            <td><a href="/Printing/Quote?itemId=@item.Id&quantity=1">Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

@@ -1,0 +1,23 @@
+@using RoomBooking.Core.Facilities.Recording
+@model IReadOnlyList<RecordingItem>
+@{
+    ViewData["Title"] = "Recording";
+}
+<h1>Recording</h1>
+<p><a href="/Recording/Orders">My Recording orders</a> · <a href="/Recording/Report">Recording report</a></p>
+<table id="items">
+    <thead>
+    <tr><th>Item</th><th>Unit price</th><th>Available</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@Text.Money(item.UnitPrice)</td>
+            <td>@item.Capacity</td>
+            <td><a href="/Recording/Quote?itemId=@item.Id&quantity=1">Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

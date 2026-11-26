@@ -1,0 +1,7 @@
+@using RoomBooking.Web.Models.Facilities
+@model VisitorsReportViewModel
+@{
+    ViewData["Title"] = "Visitors report";
+}
+<h1>Visitors report</h1>
+<p id="summary">Orders: @Model.Orders. Revenue: @Text.Money(Model.Revenue).</p>

@@ -1,0 +1,11 @@
+@model IReadOnlyList<(string Name, string Path)>
+@{
+    ViewData["Title"] = "Facilities";
+}
+<h1>Facilities</h1>
+<ul id="facilities">
+    @foreach (var facility in Model)
+    {
+        <li><a href="@facility.Path">@facility.Name</a></li>
+    }
+</ul>

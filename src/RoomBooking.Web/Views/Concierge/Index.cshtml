@@ -1,0 +1,23 @@
+@using RoomBooking.Core.Facilities.Concierge
+@model IReadOnlyList<ConciergeItem>
+@{
+    ViewData["Title"] = "Concierge";
+}
+<h1>Concierge</h1>
+<p><a href="/Concierge/Orders">My Concierge orders</a> · <a href="/Concierge/Report">Concierge report</a></p>
+<table id="items">
+    <thead>
+    <tr><th>Item</th><th>Unit price</th><th>Available</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@Text.Money(item.UnitPrice)</td>
+            <td>@item.Capacity</td>
+            <td><a href="/Concierge/Quote?itemId=@item.Id&quantity=1">Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

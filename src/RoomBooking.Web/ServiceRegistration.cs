@@ -30,6 +30,7 @@ public static class ServiceRegistration
         services.AddSingleton<RoomService>();
         services.AddSingleton<BookingService>();
         services.AddSingleton<AuthService>();
+        services.AddFacilities();
         return services;
     }
 

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using RoomBooking.Core.Facilities.Shared;
 using RoomBooking.Infrastructure;
 
 namespace RoomBooking.Web.Controllers;
@@ -7,7 +8,10 @@ namespace RoomBooking.Web.Controllers;
 /// Test-environment helper: resets all data to the documented seed.
 /// Enabled only when Testing:EnableReset is true. Never enable it in production.
 /// </summary>
-public sealed class DevController(InMemoryDataStore store, IConfiguration configuration) : AppController
+public sealed class DevController(
+    InMemoryDataStore store,
+    IEnumerable<IResettable> facilities,
+    IConfiguration configuration) : AppController
 {
     private bool Enabled => configuration.GetValue<bool>("Testing:EnableReset");
 
@@ -24,6 +28,11 @@ public sealed class DevController(InMemoryDataStore store, IConfiguration config
         }
 
         store.Reset();
+        foreach (var facility in facilities)
+        {
+            facility.Reset();
+        }
+
         Success("Test data has been reset.");
         return RedirectToAction(nameof(Index));
     }

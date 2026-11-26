@@ -1,0 +1,33 @@
+@using RoomBooking.Web.Models.Facilities
+@model VisitorsQuoteViewModel
+@{
+    ViewData["Title"] = "Visitors quote";
+}
+<h1>Visitors quote</h1>
+@if (Model.Error is not null)
+{
+    <div class="alert error" role="alert">@Model.Error</div>
+}
+@if (Model.Item is not null)
+{
+    <p>Item: <strong>@Model.Item.Name</strong></p>
+}
+@if (Model.Quote is not null)
+{
+    <dl id="quote">
+        <dt>Quantity</dt><dd>@Model.Quantity</dd>
+        <dt>Base</dt><dd>@Text.Money(Model.Quote.Base)</dd>
+        <dt>Discount</dt><dd>@Text.Money(Model.Quote.Discount)</dd>
+        @if (Model.Quote.HandlingFee > 0)
+        {
+            <dt>Handling fee</dt><dd>@Text.Money(Model.Quote.HandlingFee)</dd>
+        }
+        <dt>Total (incl. VAT)</dt><dd>@Text.Money(Model.Quote.Total)</dd>
+    </dl>
+}
+<form method="post" asp-controller="Visitors" asp-action="Place">
+    <input type="hidden" name="itemId" value="@Model.ItemId" />
+    <label for="quantity">Quantity</label>
+    <input id="quantity" name="quantity" type="number" value="@Model.Quantity" />
+    <button type="submit">Place order</button>
+</form>

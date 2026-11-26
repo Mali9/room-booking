@@ -1,0 +1,23 @@
+@using RoomBooking.Core.Facilities.Signage
+@model IReadOnlyList<SignageItem>
+@{
+    ViewData["Title"] = "Signage";
+}
+<h1>Signage</h1>
+<p><a href="/Signage/Orders">My Signage orders</a> · <a href="/Signage/Report">Signage report</a></p>
+<table id="items">
+    <thead>
+    <tr><th>Item</th><th>Unit price</th><th>Available</th><th></th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@Text.Money(item.UnitPrice)</td>
+            <td>@item.Capacity</td>
+            <td><a href="/Signage/Quote?itemId=@item.Id&quantity=1">Order</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
