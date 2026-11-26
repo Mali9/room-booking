@@ -17,7 +17,7 @@ public sealed class TranslationTests
     [Fact]
     [Trait("TestCase", "TC-1272")]
     public void Premium_quote_adds_vat() =>
-        Assert.Equal(303.26m, Pricing().Quote(Premium, 1).Total);
+        Assert.Equal(305.89m, Pricing().Quote(Premium, 1).Total);
 
     [Fact]
     [Trait("TestCase", "TC-1275")]

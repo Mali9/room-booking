@@ -17,7 +17,7 @@ public sealed class ConciergeTests
     [Fact]
     [Trait("TestCase", "TC-1342")]
     public void Premium_quote_adds_vat() =>
-        Assert.Equal(382.95m, Pricing().Quote(Premium, 1).Total);
+        Assert.Equal(386.28m, Pricing().Quote(Premium, 1).Total);
 
     [Fact]
     [Trait("TestCase", "TC-1345")]

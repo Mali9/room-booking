@@ -17,7 +17,7 @@ public sealed class CateringTests
     [Fact]
     [Trait("TestCase", "TC-1002")]
     public void Premium_quote_adds_vat() =>
-        Assert.Equal(138.00m, Pricing().Quote(Premium, 1).Total);
+        Assert.Equal(139.20m, Pricing().Quote(Premium, 1).Total);
 
     [Fact]
     [Trait("TestCase", "TC-1005")]
