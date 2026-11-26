@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Archive;
 public static class ArchiveMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

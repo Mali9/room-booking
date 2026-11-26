@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Printing;
 public static class PrintingMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

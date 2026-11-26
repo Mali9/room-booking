@@ -42,7 +42,8 @@ public sealed class InMemoryCourierRepository : ICourierRepository, IResettable
     {
         lock (_sync)
         {
-            return _orders.Where(order => order.CustomerId == customerId).OrderBy(order => order.Id).ToList();
+            var mine = _orders.Where(order => order.CustomerId == customerId);
+            return [.. mine.OrderBy(order => order.Id)];
         }
     }
 

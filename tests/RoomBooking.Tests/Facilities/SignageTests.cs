@@ -25,6 +25,6 @@ public sealed class SignageTests
     {
         var error = Assert.Throws<FacilityRuleException>(
             () => new SignageValidator(new SignagePolicy()).Validate(Premium, 0));
-        Assert.Equal("Quantity must be at least 1.", error.Message);
+        Assert.Equal("Quantity must be 1 or more.", error.Message);
     }
 }

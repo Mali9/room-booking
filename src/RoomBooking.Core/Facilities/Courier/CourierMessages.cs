@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Courier;
 public static class CourierMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

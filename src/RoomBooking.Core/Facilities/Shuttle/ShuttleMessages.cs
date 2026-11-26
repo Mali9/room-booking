@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Shuttle;
 public static class ShuttleMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

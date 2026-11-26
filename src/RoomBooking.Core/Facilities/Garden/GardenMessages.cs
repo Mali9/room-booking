@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Garden;
 public static class GardenMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

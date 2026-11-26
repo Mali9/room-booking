@@ -25,6 +25,6 @@ public sealed class GardenTests
     {
         var error = Assert.Throws<FacilityRuleException>(
             () => new GardenValidator(new GardenPolicy()).Validate(Premium, 0));
-        Assert.Equal("Quantity must be at least 1.", error.Message);
+        Assert.Equal("Quantity must be 1 or more.", error.Message);
     }
 }

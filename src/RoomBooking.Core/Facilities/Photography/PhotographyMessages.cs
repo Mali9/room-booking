@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Photography;
 public static class PhotographyMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

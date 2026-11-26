@@ -9,7 +9,7 @@ public sealed class FurnitureValidator(FurniturePolicy policy)
     {
         if (quantity < 1)
         {
-            throw new FacilityRuleException("Quantity must be at least 1.");
+            throw new FacilityRuleException("Quantity must be 1 or more.");
         }
 
         if (quantity > policy.MaxQuantity)

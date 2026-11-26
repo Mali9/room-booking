@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Studio;
 public static class StudioMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }

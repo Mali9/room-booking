@@ -6,5 +6,5 @@ namespace RoomBooking.Core.Facilities.Library;
 public static class LibraryMessages
 {
     public static string OrderPlaced(string orderId, decimal total) =>
-        $"Order {orderId} placed. Total: {Text.Money(total)}.";
+        $"Order {orderId} confirmed. Total: {Text.Money(total)}.";
 }
