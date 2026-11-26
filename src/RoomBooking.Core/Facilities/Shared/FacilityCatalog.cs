@@ -12,7 +12,6 @@ public static class FacilityCatalog
         ("Cleaning", "/Cleaning"),
         ("Maintenance", "/Maintenance"),
         ("Security", "/Security"),
-        ("Lockers", "/Lockers"),
         ("Desks", "/Desks"),
         ("Events", "/Events"),
         ("Printing", "/Printing"),
@@ -41,8 +40,6 @@ public static class FacilityCatalog
         ("Training", "/Training"),
         ("Concierge", "/Concierge"),
         ("Pantry", "/Pantry"),
-        ("Uniforms", "/Uniforms"),
-        ("Keys", "/Keys"),
         ("Badges", "/Badges"),
         ("Archive", "/Archive"),
     ];
