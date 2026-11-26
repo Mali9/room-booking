@@ -14,5 +14,5 @@ public sealed class EquipmentPolicy
     public int MaxQuantity { get; init; } = 30;
 
     /// <summary>Fee other facilities add when an order involves Equipment.</summary>
-    public decimal HandlingFee { get; init; } = 15.00m;
+    public decimal HandlingFee { get; init; } = 25.00m;
 }
