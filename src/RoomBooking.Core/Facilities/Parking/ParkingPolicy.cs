@@ -4,7 +4,7 @@ namespace RoomBooking.Core.Facilities.Parking;
 public sealed class ParkingPolicy
 {
     /// <summary>Unit prices are multiplied by this.</summary>
-    public decimal Multiplier { get; init; } = 1.10m;
+    public decimal Multiplier { get; init; } = 1.30m;
 
     /// <summary>Orders of at least this many units get the bulk discount.</summary>
     public int BulkThreshold { get; init; } = 6;
